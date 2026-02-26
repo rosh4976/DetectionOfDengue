@@ -29,12 +29,12 @@ class Review(models.Model):
 
 class Logs(models.Model):
     date = models.DateField()
-    time=models.DateTimeField()
+    time=models.TimeField()
     result=models.CharField(max_length=100)
     USER = models.ForeignKey(Users, on_delete=models.CASCADE)
 
 class Alert(models.Model):
     date = models.DateField()
-    time = models.DateTimeField()
+    time = models.TimeField()
     labels=models.CharField(max_length=100)
     USER = models.ForeignKey(Users, on_delete=models.CASCADE)

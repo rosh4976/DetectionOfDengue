@@ -1,11 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, Group
 
 # Create your views here.
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+
 from myapp.models import Complaint, Logs, Users, Review
 
 
@@ -39,7 +43,23 @@ def logout_get(request):
     # logout(request.user)
     return redirect("/myapp/login_get/")
 
+
+
+
+
+
+
 # A D M I N ---------------------
+
+
+
+
+
+
+
+
+
+
 
 
 def adminhome(request):
@@ -64,10 +84,6 @@ def changepassword_post(request):
     data.set_password(newpassword)
     data.save()
     return redirect("/myapp/login_get/")
-
-
-
-
 
 
 
@@ -117,7 +133,15 @@ def unblockuser_get(request,id):
 
 
 
+
+
+
+
 # U S E R S -----------------------
+
+
+
+
 
 
 
@@ -194,7 +218,7 @@ def sentcomplaint_post(request):
     data.status='pending'
     data.complaint=complaint
     data.date=datetime.now().date()
-    data.USER=Users.objects.get(AUTHUSER=request.user)
+    data.USERS=Users.objects.get(AUTHUSER=request.user)
     data.save()
     return redirect("/myapp/viewreply_get/")
 
@@ -229,5 +253,422 @@ def sendreview_post(request):
 
 
 
+
+# Random forest
+
+def dataset_get(request):
+    return render(request,'users/dataset.html')
+
+
+
+def dataset_post(request):
+
+    from django.shortcuts import render
+    import pandas as pd
+    from sklearn.preprocessing import LabelEncoder
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import train_test_split
+
+    if request.method == "POST":
+
+        Gender = request.POST['gender']
+        Age = int(request.POST['age'])
+        NS1 = int(request.POST['ns1'])
+        IgG = int(request.POST['igg'])
+        IgM = int(request.POST['igm'])
+        Area = request.POST['area']
+        AreaType = request.POST['areatype']
+        HouseType = request.POST['housetype']
+        District = request.POST['district']
+
+        data = pd.read_csv("C:\\Users\\rmurs\\PycharmProjects\\detection_of_dengue\\myapp\\datasetdengue.csv")
+
+        label_encoders = {}
+        for column in data.columns:
+            if data[column].dtype == 'object':
+                le = LabelEncoder()
+                data[column] = le.fit_transform(data[column])
+                label_encoders[column] = le
+
+        X = data.drop("Outcome", axis=1)
+        y = data["Outcome"]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
+
+        model = RandomForestClassifier(n_estimators=100, random_state=42)
+        model.fit(X_train, y_train)
+
+        new_patient = pd.DataFrame([{
+            'Gender': Gender,
+            'Age': Age,
+            'NS1': NS1,
+            'IgG': IgG,
+            'IgM': IgM,
+            'Area': Area,
+            'AreaType': AreaType,
+            'HouseType': HouseType,
+            'District': District
+        }])
+
+        for column in new_patient.columns:
+            if column in label_encoders:
+                new_patient[column] = label_encoders[column].transform(new_patient[column])
+
+        prediction = model.predict(new_patient)
+
+        if prediction[0] == 1:
+            result = "Dengue Positive"
+
+            from django.utils import timezone
+            resultlog=Logs()
+            resultlog.date = datetime.now().date()
+            resultlog.time = datetime.now().time()
+            resultlog.result=result
+            resultlog.USER=Users.objects.get(AUTHUSER_id=request.user.id)
+            resultlog.save()
+
+
+
+        else:
+            result = "Dengue Negative"
+            from django.utils import timezone
+            resultlog = Logs()
+            resultlog.date = datetime.now().date()
+            resultlog.time = datetime.now().time()
+            resultlog.result = result
+            resultlog.USER = Users.objects.get(AUTHUSER_id=request.user.id)
+            resultlog.save()
+
+        return render(request, "users/dataset.html", {"result": result})
+
+    return render(request, "users/dataset.html")
+
+
+
+#Linear regression
+def LRpred_get(request):
+    return render(request,'users/LRpred.html')
+
+def LRpred_post(request):
+
+    if request.method == "POST":
+
+        Gender = request.POST['gender']
+        Age = int(request.POST['age'])
+        NS1 = int(request.POST['ns1'])
+        IgG = int(request.POST['igg'])
+        IgM = int(request.POST['igm'])
+        Area = request.POST['area']
+        AreaType = request.POST['areatype']
+        HouseType = request.POST['housetype']
+        District = request.POST['district']
+
+        data = pd.read_csv("C:\\Users\\rmurs\\PycharmProjects\\detection_of_dengue\\myapp\\datasetdengue.csv")
+
+        label_encoders = {}
+        for column in data.columns:
+            if data[column].dtype == 'object':
+                le = LabelEncoder()
+                data[column] = le.fit_transform(data[column])
+                label_encoders[column] = le
+
+        X = data.drop("Outcome", axis=1)
+        y = data["Outcome"]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
+
+        from sklearn.linear_model import LogisticRegression
+        model = LogisticRegression(max_iter=1000)
+        model.fit(X_train, y_train)
+
+        new_patient = pd.DataFrame([{
+            'Gender': Gender,
+            'Age': Age,
+            'NS1': NS1,
+            'IgG': IgG,
+            'IgM': IgM,
+            'Area': Area,
+            'AreaType': AreaType,
+            'HouseType': HouseType,
+            'District': District
+        }])
+
+        for column in new_patient.columns:
+            if column in label_encoders:
+                new_patient[column] = label_encoders[column].transform(new_patient[column])
+
+        prediction = model.predict(new_patient)
+
+        if prediction[0] == 1:
+            result = "Dengue Positive"
+        else:
+            result = "Dengue Negative"
+
+        from django.utils import timezone
+
+        resultlog = Logs()
+        resultlog.date = timezone.now().date()
+        resultlog.time = timezone.now().time()
+        resultlog.result = result
+        resultlog.USER = Users.objects.get(AUTHUSER_id=request.user.id)
+        resultlog.save()
+
+        return render(request, "users/LRpred.html", {"result": result})
+
+
+    #SVM
+def SVMpred_get(request):
+    return render(request, 'users/SVMpred.html')
+
+def SVMpred_post(request):
+
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import LabelEncoder
+    from sklearn.svm import SVC
+    from django.utils import timezone
+    from datetime import datetime
+
+    if request.method == "POST":
+
+        Gender = request.POST['gender']
+        Age = int(request.POST['age'])
+        NS1 = int(request.POST['ns1'])
+        IgG = int(request.POST['igg'])
+        IgM = int(request.POST['igm'])
+        Area = request.POST['area']
+        AreaType = request.POST['areatype']
+        HouseType = request.POST['housetype']
+        District = request.POST['district']
+
+        data = pd.read_csv("C:\\Users\\rmurs\\PycharmProjects\\detection_of_dengue\\myapp\\datasetdengue.csv")
+
+
+
+
+        label_encoders = {}
+        for column in data.columns:
+            if data[column].dtype == 'object':
+                le = LabelEncoder()
+                data[column] = le.fit_transform(data[column])
+                label_encoders[column] = le
+
+        X = data.drop("Outcome", axis=1)
+        y = data["Outcome"]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
+
+        # SVM Model
+        model = SVC(kernel='rbf', C=1.0, gamma='scale')
+        model.fit(X_train, y_train)
+
+        new_patient = pd.DataFrame([{
+            'Gender': Gender,
+            'Age': Age,
+            'NS1': NS1,
+            'IgG': IgG,
+            'IgM': IgM,
+            'Area': Area,
+            'AreaType': AreaType,
+            'HouseType': HouseType,
+            'District': District
+        }])
+
+        for column in new_patient.columns:
+            if column in label_encoders:
+                new_patient[column] = label_encoders[column].transform(new_patient[column])
+
+        prediction = model.predict(new_patient)
+
+        if prediction[0] == 1:
+            result = "Dengue Positive"
+        else:
+            result = "Dengue Negative"
+
+        resultlog = Logs()
+        resultlog.date = timezone.now().date()
+        resultlog.time = timezone.now().time()
+        resultlog.result = result
+        resultlog.USER = Users.objects.get(AUTHUSER_id=request.user.id)
+        resultlog.save()
+
+        return render(request, "users/SVMpred.html", {"result": result})
+
+
+
+    #Decision Tree
+def DTpred_get(request):
+    return render(request, 'users/DTpred.html')
+
+def DTpred_post(request):
+
+    if request.method == "POST":
+
+
+        import pandas as pd
+        from sklearn.model_selection import train_test_split
+        from sklearn.preprocessing import LabelEncoder
+        from sklearn.tree import DecisionTreeClassifier
+        from django.utils import timezone
+
+        Gender = request.POST['gender']
+        Age = int(request.POST['age'])
+        NS1 = int(request.POST['ns1'])
+        IgG = int(request.POST['igg'])
+        IgM = int(request.POST['igm'])
+        Area = request.POST['area']
+        AreaType = request.POST['areatype']
+        HouseType = request.POST['housetype']
+        District = request.POST['district']
+
+
+
+        data = pd.read_csv("C:\\Users\\rmurs\\PycharmProjects\\detection_of_dengue\\myapp\\datasetdengue.csv")
+
+        label_encoders = {}
+        for column in data.columns:
+            if data[column].dtype == 'object':
+                le = LabelEncoder()
+                data[column] = le.fit_transform(data[column])
+                label_encoders[column] = le
+
+        X = data.drop("Outcome", axis=1)
+        y = data["Outcome"]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
+
+        # Decision Tree Model
+        model = DecisionTreeClassifier(
+            criterion='gini',  # or 'entropy'
+            max_depth=5,  # prevent overfitting
+            random_state=42
+        )
+
+        model.fit(X_train, y_train)
+
+        new_patient = pd.DataFrame([{
+            'Gender': Gender,
+            'Age': Age,
+            'NS1': NS1,
+            'IgG': IgG,
+            'IgM': IgM,
+            'Area': Area,
+            'AreaType': AreaType,
+            'HouseType': HouseType,
+            'District': District
+        }])
+
+        for column in new_patient.columns:
+            if column in label_encoders:
+                new_patient[column] = label_encoders[column].transform(new_patient[column])
+
+        prediction = model.predict(new_patient)
+
+        if prediction[0] == 1:
+            result = "Dengue Positive"
+        else:
+            result = "Dengue Negative"
+
+        resultlog = Logs()
+        resultlog.date = timezone.now().date()
+        resultlog.time = timezone.now().time()
+        resultlog.result = result
+        resultlog.USER = Users.objects.get(AUTHUSER_id=request.user.id)
+        resultlog.save()
+
+        return render(request, "users/DTpred.html", {"result": result})
+
+
+##XG Boost
+
+
+
+def XGpred_get(request):
+    return render(request, 'users/XGpred.html')
+
+
+def XGpred_post(request):
+    if request.method == "POST":
+
+        import pandas as pd
+        from sklearn.model_selection import train_test_split
+        from sklearn.preprocessing import LabelEncoder
+        from sklearn.ensemble import GradientBoostingClassifier
+        from django.utils import timezone
+
+        Gender = request.POST['gender']
+        Age = int(request.POST['age'])
+        NS1 = int(request.POST['ns1'])
+        IgG = int(request.POST['igg'])
+        IgM = int(request.POST['igm'])
+        Area = request.POST['area']
+        AreaType = request.POST['areatype']
+        HouseType = request.POST['housetype']
+        District = request.POST['district']
+
+        data = pd.read_csv("C:\\Users\\rmurs\\PycharmProjects\\detection_of_dengue\\myapp\\datasetdengue.csv")
+
+        label_encoders = {}
+        for column in data.columns:
+            if data[column].dtype == 'object':
+                le = LabelEncoder()
+                data[column] = le.fit_transform(data[column])
+                label_encoders[column] = le
+
+        X = data.drop("Outcome", axis=1)
+        y = data["Outcome"]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
+
+        model = GradientBoostingClassifier(
+            n_estimators=100,
+            learning_rate=0.1,
+            max_depth=3,
+            random_state=42
+        )
+
+        model.fit(X_train, y_train)
+
+        new_patient = pd.DataFrame([{
+            'Gender': Gender,
+            'Age': Age,
+            'NS1': NS1,
+            'IgG': IgG,
+            'IgM': IgM,
+            'Area': Area,
+            'AreaType': AreaType,
+            'HouseType': HouseType,
+            'District': District
+        }])
+
+        for column in new_patient.columns:
+            if column in label_encoders:
+                new_patient[column] = label_encoders[column].transform(new_patient[column])
+
+        prediction = model.predict(new_patient)
+
+        if prediction[0] == 1:
+            result = "Dengue Positive"
+        else:
+            result = "Dengue Negative"
+
+        resultlog = Logs()
+        resultlog.date = timezone.now().date()
+        resultlog.time = timezone.now().time()
+        resultlog.result = result
+        resultlog.USER = Users.objects.get(AUTHUSER_id=request.user.id)
+        resultlog.save()
+
+        return render(request, "users/XGpred.html", {"result": result})
 
 
