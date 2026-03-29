@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LSTM | Deep Learning Dengue Predictor</title>
+    <!-- Bootstrap 5.3 + Icons + Google Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Inter + Orbitron for futuristic deep learning vibe -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+        .lstm-container {
+            max-width: 980px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        /* futuristic card with neon glow */
+        .lstm-card {
+            background: rgba(18, 28, 40, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 48px;
+            box-shadow: 0 28px 56px -20px rgba(0, 255, 255, 0.2), 0 0 0 1px rgba(0, 255, 255, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 255, 255, 0.25);
+        }
+        .lstm-card:hover {
+            box-shadow: 0 32px 64px -20px rgba(0, 255, 255, 0.35), 0 0 0 1px rgba(0, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        /* LSTM header with cyberpunk gradient */
+        .lstm-header {
+            background: linear-gradient(125deg, #0a1420 0%, #0f1f2c 100%);
+            padding: 1.8rem 2rem;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+            position: relative;
+        }
+        .lstm-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00ffff, #00aaff, #00ffff);
+        }
+        .lstm-header h2 {
+            font-family: 'Orbitron', 'Inter', monospace;
+            font-weight: 800;
+            font-size: 1.9rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #00ffff;
+            letter-spacing: -0.3px;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+        }
+        .lstm-header h2 i {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 5px #00ffff);
+        }
+        .lstm-header p {
+            margin: 0.6rem 0 0 0;
+            opacity: 0.85;
+            font-size: 0.9rem;
+            color: #a0c0e0;
+            letter-spacing: 0.3px;
+        }
+        /* body padding */
+        .lstm-body {
+            padding: 2rem 2rem 2rem 2rem;
+        }
+        /* confusion matrix - neon glass */
+        .matrix-neon {
+            background: rgba(10, 25, 40, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 32px;
+            padding: 1.3rem 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            transition: all 0.2s;
+        }
+        .matrix-title-lstm {
+            font-weight: 800;
+            color: #00ffff;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 0.5px;
+        }
+        .matrix-title-lstm i {
+            font-size: 1.3rem;
+            color: #00ffff;
+            text-shadow: 0 0 3px cyan;
+        }
+        .matrix-img-lstm {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 28px;
+            padding: 0.75rem;
+            text-align: center;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.1);
+        }
+        .matrix-img-lstm img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 20px;
+            transition: transform 0.2s;
+        }
+        .matrix-caption-lstm {
+            font-size: 0.7rem;
+            color: #6c9bc2;
+            margin-top: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        /* advanced form grid */
+        .form-lstm-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.6rem;
+        }
+        @media (max-width: 700px) {
+            .form-lstm-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            .span-full-lstm {
+                grid-column: span 1;
+            }
+        }
+        .span-full-lstm {
+            grid-column: span 2;
+        }
+        @media (max-width: 700px) {
+            .span-full-lstm {
+                grid-column: span 1;
+            }
+        }
+        /* label styling with neon accents */
+        .label-lstm {
+            font-weight: 600;
+            color: #8ac4ff;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .label-lstm i {
+            font-size: 1rem;
+            color: #00ffff;
+        }
+        .input-lstm, .select-lstm {
+            border-radius: 28px;
+            border: 1.5px solid rgba(0, 255, 255, 0.3);
+            padding: 0.75rem 1rem;
+            transition: all 0.2s;
+            background-color: rgba(8, 20, 32, 0.9);
+            font-weight: 500;
+            width: 100%;
+            color: #e0f0ff;
+        }
+        .input-lstm:focus, .select-lstm:focus {
+            border-color: #00ffff;
+            box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.2);
+            outline: none;
+            background-color: rgba(10, 30, 45, 1);
+            color: white;
+        }
+        .input-lstm::placeholder {
+            color: #5a7c9e;
+        }
+        .helper-lstm {
+            font-size: 0.7rem;
+            color: #6a8fb0;
+            margin-top: 5px;
+            margin-left: 6px;
+        }
+        /* predict button - LSTM neural style */
+        .btn-lstm-predict {
+            background: linear-gradient(105deg, #0066aa, #0099ff);
+            border: none;
+            padding: 0.9rem 2.4rem;
+            font-weight: 800;
+            border-radius: 60px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 15px rgba(0, 153, 255, 0.4);
+            letter-spacing: 0.5px;
+            font-family: 'Orbitron', monospace;
+        }
+        .btn-lstm-predict:hover {
+            background: linear-gradient(105deg, #0088dd, #22aaff);
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 200, 255, 0.6);
+        }
+        .btn-lstm-predict:active {
+            transform: translateY(1px);
+        }
+        .action-lstm {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.6rem;
+        }
+        @media (max-width: 560px) {
+            .action-lstm {
+                justify-content: stretch;
+            }
+            .btn-lstm-predict {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        /* result card - neural network glow */
+        .result-lstm-card {
+            border-radius: 40px;
+            padding: 1.2rem 1.8rem;
+            margin-top: 2rem;
+            background: rgba(0, 30, 50, 0.8);
+            border-left: 8px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+        }
+        .result-lstm-card h4 {
+            font-weight: 800;
+            margin: 0;
+            color: #00ffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            font-size: 1.4rem;
+            font-family: 'Orbitron', monospace;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+        .result-lstm-card i {
+            font-size: 2rem;
+        }
+        /* divider with neon */
+        .divider-lstm {
+            margin: 1.6rem 0 1rem;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+        }
+        .footer-lstm {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 1.8rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            color: #6c9bc2;
+        }
+        /* custom select arrow */
+        select.select-lstm {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2300ffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            appearance: none;
+        }
+        /* neural pulse animation for icon */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.8; text-shadow: 0 0 2px cyan; }
+            50% { opacity: 1; text-shadow: 0 0 12px cyan; }
+        }
+        .neural-icon {
+            animation: pulse-glow 2s infinite;
+        }
+        option {
+            background-color: #0a1a2a;
+            color: #e0f0ff;
+        }
+    </style>
+</head>
+<body>
+
+{% extends 'users/userhomeindex.html' %}
+{% block body %}
+
+<div class="lstm-container">
+    <div class="lstm-card">
+        <!-- Header: LSTM deep learning theme -->
+        <div class="lstm-header">
+            <h2>
+                <i class="bi bi-motherboard neural-icon"></i> 
+                LSTM Neural Network
+            </h2>
+            <p>Long Short-Term Memory • Recurrent neural network for dengue risk classification</p>
+        </div>
+
+        <div class="lstm-body">
+            <!-- Confusion Matrix section with futuristic styling -->
+            <div class="matrix-neon">
+                <div class="matrix-title-lstm">
+                    <i class="bi bi-grid-3x3-gap-fill"></i> 
+                    Model Evaluation: LSTM Confusion Matrix
+                </div>
+                <div class="matrix-img-lstm">
+                    <img src="/static/images/lstm_confusion_matrix.png" 
+                         alt="LSTM Confusion Matrix - Deep Learning Metrics"
+                         class="img-fluid rounded"
+                         onerror="this.onerror=null; this.src='https://placehold.co/680x440/0a1a2a/00ffff?text=LSTM+Confusion+Matrix+Preview'; this.style.opacity='0.95';">
+                </div>
+                <div class="matrix-caption-lstm">
+                    <i class="bi bi-cpu"></i> Sequential memory • True Positives / Negatives & temporal accuracy
+                </div>
+            </div>
+
+            <!-- Prediction Form - action = /myapp/LSTMpred_post/ as required -->
+            <form method="post" action="/myapp/LSTMpred_post/" id="lstmForm">
+                {% csrf_token %}
+                
+                <div class="form-lstm-grid">
+                    <!-- Gender -->
+                    <div>
+                        <label class="label-lstm">
+                            <i class="bi bi-gender-ambiguous"></i> Gender
+                        </label>
+                        <select class="select-lstm" name="gender" required>
+                            <option value="" disabled selected>— Select gender —</option>
+                            <option value="Male">👨 Male</option>
+                            <option value="Female">👩 Female</option>
+                        </select>
+                        <div class="helper-lstm">Demographic input feature</div>
+                    </div>
+
+                    <!-- Age -->
+                    <div>
+                        <label class="label-lstm">
+                            <i class="bi bi-calendar2-heart"></i> Age (years)
+                        </label>
+                        <input type="number" class="input-lstm" name="age" min="0" max="120" 
+                               placeholder="e.g., 31" required>
+                        <div class="helper-lstm">Age in complete years</div>
+                    </div>
+
+                    <!-- NS1 -->
+                    <div>
+                        <label class="label-lstm">
+                            <i class="bi bi-droplet"></i> NS1 Antigen
+                        </label>
+                        <select class="select-lstm" name="ns1" required>
+                            <option value="" disabled selected>— Select result —</option>
+                            <option value="1">🟢 Positive (1) - Early infection marker</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-lstm">Detected in acute phase (days 1-5)</div>
+                    </div>
+
+                    <!-- IgG -->
+                    <div>
+                        <label class="label-lstm">
+                            <i class="bi bi-shield-plus"></i> IgG Antibody
+                        </label>
+                        <select class="select-lstm" name="igg" required>
+                            <option value="1">🟢 Positive (1)</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-lstm">Past / secondary infection indicator</div>
+                    </div>
+
+                    <!-- IgM - spans full width for better UX -->
+                    <div class="span-full-lstm">
+                        <label class="label-lstm">
+                            <i class="bi bi-shield-exclamation"></i> IgM Antibody
+                        </label>
+                        <select class="select-lstm" name="igm" required>
+                            <option value="1">🟢 Positive (1) - Recent / acute infection</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-lstm">Primary dengue immune response marker (LSTM processes sequential patterns)</div>
+                    </div>
+                </div>
+
+                <!-- Optional fields (Area, AreaType, HouseType, District) are preserved as comments per original design -->
+                
+                <div class="divider-lstm"></div>
+
+                <div class="action-lstm">
+                    <button type="submit" class="btn-lstm-predict">
+                        <i class="bi bi-diagram-3"></i> LSTM Predict
+                    </button>
+                </div>
+            </form>
+
+            <!-- RESULT SECTION with neural network themed styling -->
+            {% if result %}
+                <div class="result-lstm-card">
+                    <h4>
+                        {% if "Positive" in result or "Dengue" in result and "Negative" not in result %}
+                            <i class="bi bi-lightning-charge-fill" style="color: #ffaa33;"></i>
+                            <span>🧠 {{ result }}</span>
+                        {% elif "Negative" in result or "negative" in result %}
+                            <i class="bi bi-check2-circle" style="color: #00ffff;"></i>
+                            <span>✅ {{ result }}</span>
+                        {% else %}
+                            <i class="bi bi-clipboard2-pulse"></i>
+                            <span>{{ result }}</span>
+                        {% endif %}
+                    </h4>
+                </div>
+            {% endif %}
+
+            <!-- Clinical disclaimer with deep learning theme -->
+            <div class="footer-lstm">
+                <i class="bi bi-robot"></i> LSTM uses recurrent neural networks with memory cells for pattern recognition. 
+                This AI tool is for research & educational purposes — always consult a qualified healthcare professional.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced client-side validation with LSTM-specific messaging -->
+<script>
+    (function() {
+        const form = document.getElementById('lstmForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                const gender = form.querySelector('select[name="gender"]')?.value;
+                const age = form.querySelector('input[name="age"]')?.value;
+                const ns1 = form.querySelector('select[name="ns1"]')?.value;
+                const igg = form.querySelector('select[name="igg"]')?.value;
+                const igm = form.querySelector('select[name="igm"]')?.value;
+                
+                let errorMsg = '';
+                if (!gender) errorMsg = 'Please select your gender.';
+                else if (!age || age < 0 || age > 120) errorMsg = 'Please enter a valid age between 0 and 120 years.';
+                else if (!ns1) errorMsg = 'Please select NS1 result (Positive/Negative).';
+                else if (!igg) errorMsg = 'Please select IgG result.';
+                else if (!igm) errorMsg = 'Please select IgM result.';
+                
+                if (errorMsg) {
+                    event.preventDefault();
+                    alert(errorMsg);
+                }
+            });
+        }
+        
+        // Handle image fallback gracefully
+        const lstmImage = document.querySelector('.matrix-img-lstm img');
+        if (lstmImage && lstmImage.complete && lstmImage.naturalWidth === 0) {
+            // fallback already set via onerror
+        }
+        console.log("LSTM Dengue classifier loaded — recurrent neural network ready");
+        
+        // Add futuristic console effect
+        console.log("%c⚡ LSTM Neural Network Active ⚡", "color: #00ffff; font-size: 14px; font-family: monospace;");
+    })();
+</script>
+
+{% endblock %}
+
+<!-- Bootstrap JS bundle for any interactive components -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
