@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Ensemble Model Comparison | Dengue Predictor</title>
+    <!-- Bootstrap 5.3 + Icons + Google Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Inter + Poppins for modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7fc 0%, #eef2f8 100%);
+            min-height: 100vh;
+            padding-bottom: 2rem;
+        }
+        /* main container */
+        .ensemble-container {
+            max-width: 1400px;
+            margin: 1.5rem auto;
+            padding: 0 1.5rem;
+        }
+        /* form card */
+        .form-card-modern {
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(13, 110, 253, 0.12);
+            transition: transform 0.2s;
+        }
+        .form-card-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.12);
+        }
+        .form-header-gradient {
+            background: linear-gradient(115deg, #0d6efd, #0a58ca);
+            padding: 1.6rem 2rem;
+            color: white;
+        }
+        .form-header-gradient h2 {
+            font-family: 'Poppins', 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .form-header-gradient h2 i {
+            font-size: 2rem;
+        }
+        .form-header-gradient p {
+            margin: 0.6rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        .form-body-modern {
+            padding: 2rem;
+        }
+        /* form grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .full-width-item {
+            grid-column: span 3;
+        }
+        @media (max-width: 900px) {
+            .full-width-item {
+                grid-column: span 2;
+            }
+        }
+        @media (max-width: 600px) {
+            .full-width-item {
+                grid-column: span 1;
+            }
+        }
+        .label-styled {
+            font-weight: 600;
+            color: #1a4d6b;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .label-styled i {
+            font-size: 1rem;
+            color: #0d6efd;
+        }
+        .input-styled, .select-styled {
+            border-radius: 20px;
+            border: 1.5px solid #e2e8f0;
+            padding: 0.7rem 1rem;
+            transition: all 0.2s;
+            background-color: #ffffff;
+            font-weight: 500;
+            width: 100%;
+        }
+        .input-styled:focus, .select-styled:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+            outline: none;
+        }
+        .helper-note {
+            font-size: 0.7rem;
+            color: #7c8ea0;
+            margin-top: 0.3rem;
+        }
+        .btn-ensemble-predict {
+            background: linear-gradient(105deg, #0d6efd, #0a58ca);
+            border: none;
+            padding: 0.85rem 2.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 6px 14px rgba(13, 110, 253, 0.25);
+        }
+        .btn-ensemble-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -8px rgba(13, 110, 253, 0.4);
+        }
+        .btn-ensemble-predict:active {
+            transform: translateY(1px);
+        }
+        .action-center {
+            display: flex;
+            justify-content: center;
+            margin-top: 1.8rem;
+        }
+        /* results section */
+        .results-header {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #1a4d6b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 5px solid #0d6efd;
+            padding-left: 1rem;
+        }
+        /* model cards */
+        .model-card-compare {
+            border-radius: 24px;
+            transition: all 0.25s ease;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            height: 100%;
+            background: white;
+        }
+        .model-card-compare:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+        }
+        .card-header-model {
+            padding: 1rem 1.2rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: none;
+        }
+        .card-header-model.best-header {
+            background: linear-gradient(115deg, #198754, #157347);
+            color: white;
+        }
+        .card-header-model.normal-header {
+            background: linear-gradient(115deg, #6c757d, #5a6268);
+            color: white;
+        }
+        .model-icon {
+            font-size: 1.3rem;
+        }
+        .prediction-badge-large {
+            font-size: 0.95rem;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .prediction-positive {
+            background: #dc3545;
+            color: white;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+        .prediction-negative {
+            background: #0d6efd;
+            color: white;
+            box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+        }
+        .accuracy-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a4d6b;
+            line-height: 1;
+        }
+        .progress-custom {
+            height: 10px;
+            border-radius: 20px;
+            background-color: #e9ecef;
+        }
+        .progress-bar-custom {
+            border-radius: 20px;
+            transition: width 0.6s ease;
+        }
+        .best-badge {
+            background: #ffc107;
+            color: #1e4668;
+            padding: 0.3rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        /* summary card */
+        .summary-card-modern {
+            background: linear-gradient(115deg, #f8f9fa, #ffffff);
+            border-radius: 28px;
+            border-left: 6px solid #198754;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+            margin-top: 2rem;
+        }
+        .final-prediction-text {
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .stat-badge {
+            background: #f0f4fa;
+            border-radius: 16px;
+            padding: 0.75rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .stat-badge:hover {
+            background: #e9f0f8;
+            transform: translateY(-2px);
+        }
+        /* divider */
+        .divider-elegant {
+            margin: 2rem 0;
+            border: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+        }
+        .footer-disclaimer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            font-size: 0.75rem;
+            color: #7f8e9f;
+            border-top: 1px solid #e2e8f0;
+        }
+        @media (max-width: 768px) {
+            .ensemble-container {
+                padding: 0 1rem;
+            }
+            .form-body-modern {
+                padding: 1.5rem;
+            }
+            .final-prediction-text {
+                font-size: 1.3rem;
+            }
+        }
+        /* tooltip effect */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+    </style>
+</head>
+<body>
+
+{% extends 'users/userhomeindex.html' %}
+{% block body %}
+
+<div class="ensemble-container">
+    <!-- Input Form Card - Enhanced -->
+    <div class="form-card-modern">
+        <div class="form-header-gradient">
+            <h2>
+                <i class="bi bi-bar-chart-steps"></i>
+                Multi-Model Dengue Predictor
+            </h2>
+            <p>Compare 6 advanced algorithms: Decision Tree, Linear Regression, Random Forest, SVM, XGBoost & LSTM</p>
+        </div>
+        <div class="form-body-modern">
+            <form method="post" action="/myapp/comparepred_post/" id="ensembleForm">
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    <!-- Gender -->
+                    <div>
+                        <label class="label-styled">
+                            <i class="bi bi-gender-ambiguous"></i> Gender
+                        </label>
+                        <select class="select-styled" name="gender" required>
+                            <option value="" disabled selected>— Select gender —</option>
+                            <option value="Male">👨 Male</option>
+                            <option value="Female">👩 Female</option>
+                        </select>
+                        <div class="helper-note">Demographic input</div>
+                    </div>
+
+                    <!-- Age -->
+                    <div>
+                        <label class="label-styled">
+                            <i class="bi bi-calendar-heart"></i> Age (years)
+                        </label>
+                        <input type="number" class="input-styled" name="age" min="0" max="120" 
+                               placeholder="e.g., 34" required>
+                        <div class="helper-note">Complete years</div>
+                    </div>
+
+                    <!-- NS1 -->
+                    <div>
+                        <label class="label-styled">
+                            <i class="bi bi-droplet"></i> NS1 Antigen
+                        </label>
+                        <select class="select-styled" name="ns1" required>
+                            <option value="" disabled selected>— Select result —</option>
+                            <option value="1">🟢 Positive (1) - Early marker</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-note">Acute phase detection (Days 1-5)</div>
+                    </div>
+
+                    <!-- IgG -->
+                    <div>
+                        <label class="label-styled">
+                            <i class="bi bi-shield-plus"></i> IgG Antibody
+                        </label>
+                        <select class="select-styled" name="igg" required>
+                            <option value="1">🟢 Positive (1)</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-note">Past / secondary infection</div>
+                    </div>
+
+                    <!-- IgM -->
+                    <div class="full-width-item">
+                        <label class="label-styled">
+                            <i class="bi bi-shield-exclamation"></i> IgM Antibody
+                        </label>
+                        <select class="select-styled" name="igm" required>
+                            <option value="1">🟢 Positive (1) - Recent infection</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-note">Primary immune response marker</div>
+                    </div>
+                   
+                </div>
+
+                <div class="action-center">
+                    <button type="submit" class="btn-ensemble-predict">
+                        <i class="bi bi-cpu"></i> Compare All Models
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RESULTS SECTION -->
+    {% if results %}
+    <div>
+        <div class="results-header">
+            <i class="bi bi-graph-up"></i>
+            Ensemble Model Comparison Results
+        </div>
+
+        <div class="row g-4">
+            {% for model, data in results.items %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="model-card-compare">
+                        <div class="card-header-model {% if model == best_model %}best-header{% else %}normal-header{% endif %}">
+                            <span>
+                                {% if 'Decision' in model %}
+                                    <i class="bi bi-diagram-2 me-2"></i>
+                                {% elif 'Linear' in model %}
+                                    <i class="bi bi-graph-up me-2"></i>
+                                {% elif 'Random' in model %}
+                                    <i class="bi bi-tree-fill me-2"></i>
+                                {% elif 'SVM' in model %}
+                                    <i class="bi bi-vector-pen me-2"></i>
+                                {% elif 'XGBoost' in model %}
+                                    <i class="bi bi-cpu me-2"></i>
+                                {% elif 'LSTM' in model %}
+                                    <i class="bi bi-motherboard me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-cpu me-2"></i>
+                                {% endif %}
+                                {{ model }}
+                            </span>
+                            {% if model == best_model %}
+                                <span class="best-badge">
+                                    <i class="bi bi-trophy-fill"></i> BEST
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body text-center p-4">
+                            <!-- Prediction Badge -->
+                            {% if data.prediction == "Dengue Positive" %}
+                                <div class="prediction-badge-large prediction-positive mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    {{ data.prediction }}
+                                </div>
+                            {% else %}
+                                <div class="prediction-badge-large prediction-negative mb-3">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    {{ data.prediction }}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Accuracy Display -->
+                            <div class="mt-3">
+                                <div class="accuracy-value">{{ data.accuracy }}%</div>
+                                <div class="text-muted small mt-1">Model Accuracy</div>
+                                <div class="progress-custom mt-2">
+                                    <div class="progress-bar-custom 
+                                        {% if model == best_model %}
+                                            bg-success
+                                        {% else %}
+                                            bg-primary
+                                        {% endif %}
+                                    " 
+                                    style="width: {{ data.accuracy }}%; height: 10px;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Confidence Level -->
+                            <div class="mt-3 pt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-bar-chart"></i> 
+                                    Confidence: 
+                                    {% if data.accuracy >= 90 %}
+                                        <span class="text-success fw-bold">Very High</span>
+                                    {% elif data.accuracy >= 75 %}
+                                        <span class="text-info fw-bold">High</span>
+                                    {% elif data.accuracy >= 60 %}
+                                        <span class="text-warning fw-bold">Moderate</span>
+                                    {% else %}
+                                        <span class="text-secondary">Standard</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Final Summary Card - Enhanced -->
+        <div class="summary-card-modern">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <h4 class="text-success fw-bold mb-2">
+                            <i class="bi bi-trophy-fill me-2"></i>
+                            Best Performing Model
+                        </h4>
+                        <div class="display-6 fw-bold text-primary">{{ best_model }}</div>
+                        <div class="mt-2">
+                            {% for model, data in results.items %}
+                                {% if model == best_model %}
+                                    <span class="badge bg-success fs-6 p-2 mt-2">
+                                        <i class="bi bi-check2-circle"></i> Accuracy: {{ data.accuracy }}%
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end mt-4 mt-md-0">
+                        <h5 class="text-secondary mb-2">Consensus Final Prediction</h5>
+                        {% if best_result == "Dengue Positive" %}
+                            <div class="final-prediction-text text-danger">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                {{ best_result }}
+                            </div>
+                            <div class="small text-muted mt-2">⚠️ Medical consultation recommended</div>
+                        {% else %}
+                            <div class="final-prediction-text text-success">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                {{ best_result }}
+                            </div>
+                            <div class="small text-muted mt-2">✓ Low risk indicator</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Ensemble Insights - Stats Row -->
+                <hr class="my-4">
+                <div class="row g-3 text-center">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-badge">
+                            <div class="small text-muted">Models Evaluated</div>
+                            <div class="fw-bold fs-3">{{ results|length }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-badge">
+                            <div class="small text-muted">Positive Predictions</div>
+                            <div class="fw-bold fs-3 text-danger">
+                                {% with pos_count=0 %}
+                                    {% for model, data in results.items %}
+                                        {% if data.prediction == "Dengue Positive" %}
+                                            {{ pos_count|add:1 }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-badge">
+                            <div class="small text-muted">Negative Predictions</div>
+                            <div class="fw-bold fs-3 text-primary">
+                                {% with neg_count=0 %}
+                                    {% for model, data in results.items %}
+                                        {% if data.prediction == "Dengue Negative" %}
+                                            {{ neg_count|add:1 }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-badge">
+                            <div class="small text-muted">Models Agreeing</div>
+                            <div class="fw-bold fs-3 text-success">
+                                {% with agree=0 %}
+                                    {% for model, data in results.items %}
+                                        {% if data.prediction == best_result %}
+                                            {{ agree|add:1 }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                                / {{ results|length }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer Disclaimer -->
+    <div class="footer-disclaimer">
+        <i class="bi bi-shield-check me-1"></i> Ensemble comparison combines Decision Tree, Linear Regression, Random Forest, SVM, XGBoost & LSTM models.
+        This tool is for research & educational assistance — always consult a qualified healthcare professional for diagnosis.
+    </div>
+</div>
+
+<!-- Client-side validation script -->
+<script>
+    (function() {
+        const form = document.getElementById('ensembleForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                const gender = form.querySelector('select[name="gender"]')?.value;
+                const age = form.querySelector('input[name="age"]')?.value;
+                const ns1 = form.querySelector('select[name="ns1"]')?.value;
+                const igg = form.querySelector('select[name="igg"]')?.value;
+                const igm = form.querySelector('select[name="igm"]')?.value;
+                
+                let errorMsg = '';
+                if (!gender) errorMsg = 'Please select your gender.';
+                else if (!age || age < 0 || age > 120) errorMsg = 'Please enter a valid age between 0 and 120 years.';
+                else if (!ns1) errorMsg = 'Please select NS1 result.';
+                else if (!igg) errorMsg = 'Please select IgG result.';
+                else if (!igm) errorMsg = 'Please select IgM result.';
+                
+                if (errorMsg) {
+                    event.preventDefault();
+                    alert(errorMsg);
+                }
+            });
+        }
+        console.log("Ensemble Model Comparison Interface Ready");
+    })();
+</script>
+
+{% endblock %}
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
