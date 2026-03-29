@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
@@ -63,7 +62,7 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto">
-                        <a href="" class="nav-item nav-link active">Home</a>
+                        <a href="/myapp/userhome_get/" class="nav-item nav-link active">Home</a>
                         <a href="/myapp/viewprofile_get/#a" class="nav-item nav-link">Profile</a>
                          <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Predict</a>
@@ -73,6 +72,8 @@
                                 <a href="/myapp/dataset_get/#a" class="dropdown-item">Random Forest</a>
                                 <a href="/myapp/SVMpred_get/#a" class="dropdown-item">SVM</a>
                                  <a href="/myapp/XGpred_get/#a" class="dropdown-item">XG Boost</a>
+                                 <a href="/myapp/LSTMpred_get/#a" class="dropdown-item">LSTM</a>
+                                 <a href="/myapp/comparepred_get/#a" class="dropdown-item">Compared</a>
                             </div>
                         </div>
                                                 <a href="/myapp/userviewlogs_get/#a" class="nav-item nav-link">Logs</a>
@@ -82,7 +83,7 @@
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Others</a>
                             <div class="dropdown-menu bg-light mt-2">
-                                <a href="/myap  p/sentcomplaint_get/#a" class="dropdown-item">Send Complaint</a>
+                                <a href="/myapp/sentcomplaint_get/#a" class="dropdown-item">Send Complaint</a>
                                 <a href="/myapp/viewreply_get/#a" class="dropdown-item">View reply</a>
                                 <a href="/myapp/sendreview_get/#a" class="dropdown-item">Send review</a>
                                 <a href="/myapp/changepassword_get/#a" class="dropdown-item">Change password</a>
@@ -115,8 +116,8 @@ Early Detection Saves Lives
 "Early detection saves lives — awareness is the first vaccine."
 </p>
 
-<a href="/myapp/dataset_get/#a" class="btn btn-danger px-4 py-2">
-    Predict Now
+<a href="/myapp/comparepred_get/#a" class="btn btn-danger px-4 py-2">
+    compare predictions
 </a>
                     <h5 class="d-inline-block border border-2 border-danger py-3 px-5 mb-0 animated slideInRight">
     Dataset-Based Machine Learning Model
