@@ -2,99 +2,435 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SVM Dataset Entry Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SVM | Dengue Risk Classifier</title>
+    <!-- Bootstrap 5.3 + Icons + Google Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Inter + DM Sans for modern tech/medical look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f1f5f9 0%, #e6edf2 100%);
+            min-height: 100vh;
+            padding-bottom: 2rem;
+        }
+        /* main container */
+        .svm-container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        /* card with subtle border */
+        .svm-card {
+            background: #ffffff;
+            border-radius: 44px;
+            box-shadow: 0 24px 48px -18px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0,0,0,0.02);
+            overflow: hidden;
+            transition: all 0.25s ease;
+            border: 1px solid rgba(114, 86, 165, 0.18);
+        }
+        .svm-card:hover {
+            box-shadow: 0 32px 56px -20px rgba(98, 71, 148, 0.2);
+        }
+        /* header with SVM specific gradient (purple/blue tones) */
+        .svm-header {
+            background: linear-gradient(125deg, #4a2f7c 0%, #6d4c9e 100%);
+            padding: 1.7rem 2rem;
+            border-bottom: none;
+        }
+        .svm-header h2 {
+            font-family: 'DM Sans', 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.9rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: white;
+            letter-spacing: -0.3px;
+        }
+        .svm-header h2 i {
+            font-size: 2.1rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        .svm-header p {
+            margin: 0.6rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.92);
+        }
+        /* body padding */
+        .svm-body {
+            padding: 2rem 2rem 2rem 2rem;
+        }
+        /* confusion matrix container - modern glass effect */
+        .matrix-modern {
+            background: linear-gradient(115deg, #faf8ff, #f5f2fc);
+            border-radius: 32px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e3daf5;
+            transition: all 0.2s;
+        }
+        .matrix-title-svm {
+            font-weight: 800;
+            color: #5a3f8c;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .matrix-title-svm i {
+            font-size: 1.3rem;
+            color: #7a5bb5;
+        }
+        .matrix-img-box {
+            background: white;
+            border-radius: 28px;
+            padding: 0.75rem;
+            text-align: center;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.03);
+        }
+        .matrix-img-box img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 20px;
+            transition: transform 0.2s;
+        }
+        .matrix-caption-svm {
+            font-size: 0.7rem;
+            color: #8e77b3;
+            margin-top: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        /* form grid layout */
+        .form-svm-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 680px) {
+            .form-svm-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            .full-width-span {
+                grid-column: span 1;
+            }
+        }
+        .full-width-span {
+            grid-column: span 2;
+        }
+        @media (max-width: 680px) {
+            .full-width-span {
+                grid-column: span 1;
+            }
+        }
+        /* label styling with SVM colors */
+        .label-svm {
+            font-weight: 600;
+            color: #4a3380;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .label-svm i {
+            font-size: 1rem;
+            color: #826ab3;
+        }
+        .input-svm, .select-svm {
+            border-radius: 24px;
+            border: 1.5px solid #e4dcf5;
+            padding: 0.7rem 1rem;
+            transition: all 0.2s;
+            background-color: #ffffff;
+            font-weight: 500;
+            width: 100%;
+        }
+        .input-svm:focus, .select-svm:focus {
+            border-color: #886ac6;
+            box-shadow: 0 0 0 3px rgba(136, 106, 198, 0.2);
+            outline: none;
+        }
+        .helper-svm {
+            font-size: 0.7rem;
+            color: #998bc2;
+            margin-top: 5px;
+            margin-left: 4px;
+        }
+        /* predict button - SVM style */
+        .btn-svm-predict {
+            background: linear-gradient(105deg, #5b3d96, #7a5ab5);
+            border: none;
+            padding: 0.85rem 2.2rem;
+            font-weight: 700;
+            border-radius: 60px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 18px rgba(91, 61, 150, 0.3);
+        }
+        .btn-svm-predict:hover {
+            background: linear-gradient(105deg, #4c3180, #684ba0);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 26px -10px rgba(91, 61, 150, 0.45);
+        }
+        .btn-svm-predict:active {
+            transform: translateY(1px);
+        }
+        .action-svm {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        @media (max-width: 560px) {
+            .action-svm {
+                justify-content: stretch;
+            }
+            .btn-svm-predict {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        /* result alert with SVM accent */
+        .result-svm-card {
+            border-radius: 36px;
+            padding: 1rem 1.8rem;
+            margin-top: 2rem;
+            background: linear-gradient(105deg, #f4effb, #ede7f8);
+            border-left: 8px solid #7a5ab5;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.04);
+        }
+        .result-svm-card h4 {
+            font-weight: 800;
+            margin: 0;
+            color: #4a3285;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            font-size: 1.35rem;
+            font-family: 'DM Sans', monospace;
+        }
+        .result-svm-card i {
+            font-size: 2rem;
+        }
+        /* divider */
+        .divider-svm {
+            margin: 1.5rem 0 1rem;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #cfc2e8, transparent);
+        }
+        .footer-svm {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 1.8rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e9e2f5;
+            color: #8f7bb0;
+        }
+        /* custom select arrow */
+        select.select-svm {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a5ab5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            appearance: none;
+        }
+        /* optional tooltip styling */
+        .info-badge {
+            cursor: help;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container mt-5">
-    <h2 class="mb-4 text-center">Dengue Prediction</h2>
+{% extends 'users/userhomeindex.html' %}
+{% block body %}
 
-    <form method="post" action="/myapp/SVMpred_post/">
-        {% csrf_token %}
-
-        <!-- Gender -->
-        <div class="mb-3">
-            <label class="form-label">Gender</label>
-            <select class="form-control" name="gender" required>
-                <option value="">Select</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-            </select>
+<div class="svm-container">
+    <div class="svm-card">
+        <!-- Header: Support Vector Machine specific -->
+        <div class="svm-header">
+            <h2>
+                <i class="bi bi-vector-pen"></i> 
+                SVM Classifier
+            </h2>
+            <p>Support Vector Machine • Kernel-based dengue risk prediction</p>
         </div>
 
-        <!-- Age -->
-        <div class="mb-3">
-            <label class="form-label">Age</label>
-            <input type="number" class="form-control" name="age" min="0" required>
+        <div class="svm-body">
+            <!-- Confusion Matrix section with SVM styling -->
+            <div class="matrix-modern">
+                <div class="matrix-title-svm">
+                    <i class="bi bi-grid-3x3-gap-fill"></i> 
+                    Model Performance: SVM Confusion Matrix
+                </div>
+                <div class="matrix-img-box">
+                    <img src="/static/images/svm_confusion_matrix.png" 
+                         alt="SVM Confusion Matrix - Classification Metrics"
+                         class="img-fluid rounded"
+                         onerror="this.onerror=null; this.src='https://placehold.co/680x440/f5f0ff/7a5ab5?text=SVM+Confusion+Matrix+Preview'; this.style.opacity='0.9';">
+                </div>
+                <div class="matrix-caption-svm">
+                    <i class="bi bi-bar-chart-steps"></i> True Positives / Negatives & margin hyperplane evaluation
+                </div>
+            </div>
+
+            <!-- Prediction Form - action = /myapp/SVMpred_post/ (as required) -->
+            <form method="post" action="/myapp/SVMpred_post/" id="svmPredictionForm">
+                {% csrf_token %}
+                
+                <div class="form-svm-grid">
+                    <!-- Gender -->
+                    <div>
+                        <label class="label-svm">
+                            <i class="bi bi-gender-ambiguous"></i> Gender
+                        </label>
+                        <select class="select-svm" name="gender" required>
+                            <option value="" disabled selected>— Select gender —</option>
+                            <option value="Male">👨 Male</option>
+                            <option value="Female">👩 Female</option>
+                        </select>
+                        <div class="helper-svm">Demographic input feature</div>
+                    </div>
+
+                    <!-- Age -->
+                    <div>
+                        <label class="label-svm">
+                            <i class="bi bi-calendar2-heart"></i> Age (years)
+                        </label>
+                        <input type="number" class="input-svm" name="age" min="0" max="120" 
+                               placeholder="e.g., 32" required>
+                        <div class="helper-svm">Age in complete years</div>
+                    </div>
+
+                    <!-- NS1 -->
+                    <div>
+                        <label class="label-svm">
+                            <i class="bi bi-droplet"></i> NS1 Antigen
+                        </label>
+                        <select class="select-svm" name="ns1" required>
+                            <option value="" disabled selected>— Select result —</option>
+                            <option value="1">🟢 Positive (1) - Early infection marker</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-svm">Detected within 1-5 days of fever</div>
+                    </div>
+
+                    <!-- IgG -->
+                    <div>
+                        <label class="label-svm">
+                            <i class="bi bi-shield-plus"></i> IgG Antibody
+                        </label>
+                        <select class="select-svm" name="igg" required>
+                            <option value="1">🟢 Positive (1)</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-svm">Past / secondary infection indicator</div>
+                    </div>
+
+                    <!-- IgM - spans full width for better readability -->
+                    <div class="full-width-span">
+                        <label class="label-svm">
+                            <i class="bi bi-shield-exclamation"></i> IgM Antibody
+                        </label>
+                        <select class="select-svm" name="igm" required>
+                            <option value="1">🟢 Positive (1) - Acute/recent infection</option>
+                            <option value="0">🔴 Negative (0)</option>
+                        </select>
+                        <div class="helper-svm">Primary dengue response marker (appears after day 3-5)</div>
+                    </div>
+                </div>
+
+                <!-- Commented optional fields: Area, AreaType, HouseType, District (not active) -->
+                
+                <div class="divider-svm"></div>
+
+                <div class="action-svm">
+                    <button type="submit" class="btn-svm-predict">
+                        <i class="bi bi-cpu"></i> SVM Predict
+                    </button>
+                </div>
+            </form>
+
+            <!-- RESULT SECTION with SVM-themed styling -->
+            {% if result %}
+                <div class="result-svm-card">
+                    <h4>
+                        {% if "Positive" in result or "Dengue" in result and "Negative" not in result %}
+                            <i class="bi bi-vector-pen" style="color: #b37b2e;"></i>
+                            <span>⚠️ {{ result }}</span>
+                        {% elif "Negative" in result or "negative" in result %}
+                            <i class="bi bi-check2-circle" style="color: #7a5ab5;"></i>
+                            <span>✅ {{ result }}</span>
+                        {% else %}
+                            <i class="bi bi-clipboard2-pulse"></i>
+                            <span>{{ result }}</span>
+                        {% endif %}
+                    </h4>
+                </div>
+            {% endif %}
+
+            <!-- Clinical disclaimer with SVM emphasis -->
+            <div class="footer-svm">
+                <i class="bi bi-info-circle-fill"></i> Support Vector Machine uses hyperplane optimization for classification. 
+                This tool is intended for research & educational purposes — always seek professional medical advice.
+            </div>
         </div>
-
-        <!-- NS1 -->
-        <div class="mb-3">
-            <label class="form-label">NS1</label>
-            <select class="form-control" name="ns1" required>
-                <option value="">Select</option>
-                <option value="1">Positive (1)</option>
-                <option value="0">Negative (0)</option>
-            </select>
-        </div>
-
-        <!-- IgG -->
-        <div class="mb-3">
-            <label class="form-label">IgG</label>
-            <select class="form-control" name="igg" required>
-                <option value="1">Positive (1)</option>
-                <option value="0">Negative (0)</option>
-            </select>
-        </div>
-
-        <!-- IgM -->
-        <div class="mb-3">
-            <label class="form-label">IgM</label>
-            <select class="form-control" name="igm" required>
-                <option value="1">Positive (1)</option>
-                <option value="0">Negative (0)</option>
-            </select>
-        </div>
-
-        <!-- Area -->
-        <div class="mb-3">
-            <input type="text" class="form-control" name="area" placeholder="Area" required>
-        </div>
-
-        <!-- Area Type -->
-        <div class="mb-3">
-            <select class="form-control" name="areatype" required>
-                <option value="Developed">Developed</option>
-                <option value="Undeveloped">Undeveloped</option>
-            </select>
-        </div>
-
-        <!-- House Type -->
-        <div class="mb-3">
-            <select class="form-control" name="housetype" required>
-                <option value="Building">Building</option>
-                <option value="Other">Other</option>
-            </select>
-        </div>
-
-        <!-- District -->
-        <div class="mb-3">
-            <input type="text" class="form-control" name="district" placeholder="District" required>
-        </div>
-
-        <button type="submit" class="btn btn-primary ">Predict</button>
-
-    </form>
-
-    <!-- RESULT SECTION -->
-    {% if result %}
-        <div class="alert alert-info mt-4 text-center">
-            <h4>{{ result }}</h4>
-        </div>
-    {% endif %}
-
+    </div>
 </div>
 
+<!-- Enhanced client-side validation with SVM-specific messages -->
+<script>
+    (function() {
+        const form = document.getElementById('svmPredictionForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                const gender = form.querySelector('select[name="gender"]')?.value;
+                const age = form.querySelector('input[name="age"]')?.value;
+                const ns1 = form.querySelector('select[name="ns1"]')?.value;
+                const igg = form.querySelector('select[name="igg"]')?.value;
+                const igm = form.querySelector('select[name="igm"]')?.value;
+                
+                let errorMsg = '';
+                if (!gender) errorMsg = 'Please select your gender.';
+                else if (!age || age < 0 || age > 120) errorMsg = 'Please enter a valid age between 0 and 120 years.';
+                else if (!ns1) errorMsg = 'Please select NS1 result (Positive/Negative).';
+                else if (!igg) errorMsg = 'Please select IgG result.';
+                else if (!igm) errorMsg = 'Please select IgM result.';
+                
+                if (errorMsg) {
+                    event.preventDefault();
+                    alert(errorMsg);
+                }
+            });
+        }
+        
+        // Handle image fallback gracefully (onerror attribute already set)
+        const svmImage = document.querySelector('.matrix-img-box img');
+        if (svmImage && svmImage.complete && svmImage.naturalWidth === 0) {
+            // fallback already provided via onerror
+        }
+        console.log("SVM Dengue classifier ready — kernel-based prediction interface");
+    })();
+</script>
+
+{% endblock %}
+
+<!-- Bootstrap JS bundle for any interactive components -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
